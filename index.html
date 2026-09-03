@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080b12"><title>第七号地下城主</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="game-ui.css"></head>
+<body>
+<div class="shell">
+  <header><div class="sigil">Ⅶ</div><div><small>DRIVE & DRAGONS</small><h1>第七号地下城主</h1></div><div class="header-actions"><button id="sheetBtn" class="ghost hidden">角色卡</button><button id="soundBtn" class="round" aria-pressed="true" title="模型语音已开启；点击可静音">静</button></div></header>
+  <main>
+    <section id="welcome" class="welcome">
+      <div class="hero-orb"><i></i><span>Ⅶ</span></div>
+      <p class="overline">等待一位旅人</p><h2>让道路成为你的地下城</h2>
+      <p>主持人将通过对话认识你、建立角色，并让每一段车外风景成为冒险的一部分。</p>
+      <label class="demo-file"><input id="videoFile" type="file" accept="video/*"><span id="fileText">选择任意本地视频</span></label>
+      <button id="beginBtn" class="primary">开始地下城冒险</button>
+      <small class="privacy">视频仅在本机播放。每次行动结算后，本机会立即截取当前画面作为下一幕剧情锚点。</small>
+      <small class="ai-voice">地下城主语音由 AI 生成。</small>
+    </section>
+
+    <section id="session" class="session hidden">
+      <div class="stage card">
+        <video id="video" playsinline muted></video>
+        <div class="stage-shade"></div>
+        <div class="stage-top"><span id="phase">角色创建</span><span id="clock">00:00 / 10:00</span></div>
+        <div class="timeline"><i id="progress"></i></div>
+        <div id="sceneTag" class="scene-tag">现实锚点 · 等待视频画面</div>
+      </div>
+
+      <aside class="side-rail" aria-label="角色与故事状态">
+        <figure id="framePreview" class="frame-preview hidden"><img id="frameImage" alt="本幕剧情使用的车外画面"><figcaption id="frameCaption">本幕视觉锚点</figcaption></figure>
+        <div class="sidebar-stack">
+          <section id="sideSheet" class="side-sheet card hidden" aria-label="当前角色卡">
+            <div class="side-sheet-head"><div><p class="overline">CHARACTER SHEET</p><h2 id="sidePcName">未创建角色</h2><p id="sidePcIdentity"></p></div><div class="side-level"><small>等级</small><b>1</b></div></div>
+            <p id="sidePcConcept" class="side-concept"></p>
+            <div id="sideAbilities" class="side-abilities"></div>
+            <div class="side-quick"><span>生命值 <b id="sideHp"></b></span><span>护甲 <b id="sideAc"></b></span><span>被动察觉 <b id="sidePassive"></b></span></div>
+            <section><h3>技能熟练</h3><p id="sideSkills"></p></section>
+            <section><h3>职业特性与天赋</h3><p id="sideFeature"></p></section>
+            <section><h3>专属骰子</h3><p id="sideDice">角色完成后生成。</p></section>
+            <button id="openSheetBtn" class="ghost">查看完整角色卡</button>
+          </section>
+        </div>
+        <section class="story-cards" aria-label="旅程故事状态">
+          <article class="story-card card effect-card"><p class="overline">STORY IMPACT</p><h2>事件影响</h2><p id="storyEffectText">尚未获得临时状态。</p></article>
+        </section>
+      </aside>
+
+      <article class="dm card"><div class="dm-mark">Ⅶ</div><div><p class="overline"><span id="dmPulse"></span><b id="dmState">地下城主正在叙述</b></p><p id="narration"></p></div></article>
+      <div id="roll" class="roll hidden"></div>
+      <div id="suggestions" class="suggestions"></div>
+      <div id="countdown" class="countdown hidden"><span>你的行动时间</span><b>60</b><i></i></div>
+
+      <div class="voice card">
+        <button id="micBtn" class="mic"><span></span></button>
+        <div><b id="listenLabel">点击麦克风说话</b><small>你可以自由描述，不必使用建议选项 · <span id="voiceSpeed">当前语速 1.08×</span></small></div>
+        <form id="textForm"><input id="textInput" placeholder="或在这里输入你的回答…" autocomplete="off"><button>发送</button></form>
+      </div>
+      <div class="session-actions"><button id="pauseBtn" class="ghost">暂停冒险</button><button id="exitBtn" class="ghost danger">保存并退出</button></div>
+    </section>
+  </main>
+</div>
+
+<dialog id="sheet" class="sheet"><button id="closeSheet">×</button><p class="overline">PLAYER CHARACTER</p><div class="sheet-title"><div><h2 id="pcName"></h2><p id="pcIdentity"></p></div><div class="level"><small>等级</small><b>1</b></div></div><p id="pcConcept" class="concept"></p><div id="abilities" class="abilities"></div><div class="quick"><div><small>生命值</small><b id="hp"></b></div><div><small>护甲等级</small><b id="ac"></b></div><div><small>被动察觉</small><b id="passive"></b></div><div><small>熟练加值</small><b>+2</b></div></div><section><h3>技能熟练</h3><p id="skills"></p></section><section><h3>职业特性与天赋</h3><p id="features"></p></section><section><h3>专属骰子</h3><p id="sheetDice">角色完成后生成。</p></section><section><h3>旅程主线</h3><p id="sheetQuest">角色完成后，由地下城主揭示。</p></section><section><h3>事件影响</h3><p id="sheetEffects">尚未获得临时状态。</p></section><section><h3>人物小传</h3><p id="backstory"></p></section><section><h3>冒险小队</h3><div id="party"></div></section></dialog>
+<script src="app.js"></script>
+</body></html>
