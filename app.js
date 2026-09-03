@@ -551,7 +551,7 @@ function onVideoProgress() {
 }
 
 function time(seconds) { const n = Math.floor(seconds || 0); return `${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`; }
-function pauseGame() { state.paused = !state.paused; if (state.paused) { video.pause(); stopDecision(); $('#pauseBtn').textContent = '继续冒险'; speak('冒险已暂停。道路和潮声都在等待。'); } else { video.play().catch(() => {}); $('#pauseBtn').textContent = '暂停冒险'; speak('冒险继续。让我先回顾当前局面。', () => beginDecision(currentChoices())); } }
+function pauseGame() { state.paused = !state.paused; if (state.paused) { video.pause(); stopDecision(); $('#pauseBtn').textContent = '继续冒险'; speak('冒险已暂停。旅途与故事都停在这一刻，等待你的归来。'); } else { video.play().catch(() => {}); $('#pauseBtn').textContent = '暂停冒险'; speak('冒险继续。让我先回顾当前局面。', () => beginDecision(currentChoices())); } }
 
 // 语音默认开启；首次点击“开始冒险”会同步解锁浏览器的异步音频播放权限。
 $('#soundBtn').dataset.on = 'true';
