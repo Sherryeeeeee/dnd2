@@ -333,9 +333,10 @@ function captureStoryAnchor() {
 
 async function chooseMainQuest() {
   clearSuggestions();
+  const pc = state.character;
   const fallback = {
     title: '三道委托',
-    narration: '眼前的景象里藏着三道尚未被说破的岔路：一条通向迫近的危机，一条通向陌生人的交易，另一条则通向被遗忘的秘密。',
+    narration: `${pc?.name || '旅人'}，作为一位${pc?.race || ''}${pc?.className || '冒险者'}，你的故事已经有了形状。眼前的景象里藏着三道岔路：迫近的危机、陌生人的交易，与被遗忘的秘密。`,
     choices: [['阻止正在逼近的异变', '选择主线', 0], ['接受陌生旅人的危险委托', '选择主线', 0], ['追查地标背后的失落秘密', '选择主线', 0]],
     passiveDC: 13,
     mood: '庄重、神秘、带有启程前的紧迫感'
@@ -343,7 +344,7 @@ async function chooseMainQuest() {
   const scene = await askDM({
     requestType: 'main_quest_options',
     openingScene: state.module?.hook,
-    instruction: '必须依据第一帧截图的实际可见主体、地貌、人工设施、天气、光线或人物，结合角色和动机，实时创作三条原创主线任务。三条任务应使用画面中不同的元素，分别体现危机、社交交易或秘密探索等差异；不要使用预置模组、固定 NPC 动机或惯用母题。除非画面确有对应元素或玩家主动提及，禁止使用寻找弟弟/失踪亲属、呼唤、潮声/潮汐、海神殿、灯塔、罗盘等内容。narration 用短叙事呈现三条委托同时出现的时刻；choices 必须是三个任务名，check 固定“选择主线”，dc 为 0，requiresRoll 为 false。不要进入实际遭遇，也不要剧透真相。'
+    instruction: '这是角色创建的第 4 步，必须在同一段 narration 中先用一句话确认角色卡已经完成（只提名字、种族、职业、天赋或动机，绝不念等级、属性、生命、护甲或数值），随即自然呈现三条主线委托；不要把确认角色和选择主线拆成两轮对话。三条任务必须依据第一帧截图的实际可见主体、地貌、人工设施、天气、光线或人物，结合角色和动机实时创作。三条任务应使用画面中不同的元素，分别体现危机、社交交易或秘密探索等差异；不要使用预置模组、固定 NPC 动机或惯用母题。除非画面确有对应元素或玩家主动提及，禁止使用寻找弟弟/失踪亲属、呼唤、潮声/潮汐、海神殿、灯塔、罗盘等内容。choices 必须是三个任务名，check 固定“选择主线”，dc 为 0，requiresRoll 为 false。不要进入实际遭遇，也不要剧透真相。'
   }, fallback);
   state.questScene = { ...scene, anchor: state.module?.name || '开场画面' };
   $('#phase').textContent = '选择主线委托';
@@ -539,8 +540,7 @@ async function handleCreationAnswer(value) {
   if (state.creationStep === 2) {
     state.motivation = answer;
     buildCharacter(state.concept || '一名谨慎的冒险者', state.name, state.resolvedRace || '人类', state.motivation, state.talent, state.resolvedClass);
-    const pc = state.character; const intro = `${pc.name}，一位${pc.race}${pc.className}。${pc.talent}，这正是人们会记住你的地方。玛拉、托恩和伊西尔已在你身旁；你们将共同踏入${state.module.name}。`;
-    state.phase = 'quest_selection'; video.play().catch(() => {}); speak(intro, () => chooseMainQuest()); return;
+    state.phase = 'quest_selection'; video.play().catch(() => {}); chooseMainQuest(); return;
   }
   state.creationStep += 1; runCreation();
 }
