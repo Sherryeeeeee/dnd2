@@ -14,8 +14,10 @@ services:
       - key: OPENAI_DM_MODEL
         value: gpt-4o-mini
       - key: TTS_PROVIDER
-        value: openai
-      - key: OPENAI_TTS_MODEL
-        value: gpt-4o-mini-tts
-      - key: OPENAI_TTS_VOICE
-        value: marin
+        value: doubao
+      - key: VOLCENGINE_TTS_API_KEY
+        sync: false
+      - key: VOLCENGINE_TTS_RESOURCE_ID
+        value: seed-tts-2.0
+      - key: VOLCENGINE_TTS_SPEAKER
+        value: zh_female_sophie_uranus_bigtts

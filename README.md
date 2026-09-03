@@ -65,7 +65,7 @@ export VOLCENGINE_RT_MODEL="1.2.1.1"
 
 1. 将 `龙与地下城_new` 上传到一个新的 GitHub 仓库。不要上传 `.env`、真实 API Key 或 `node_modules`。
 2. 登录 [Render](https://render.com)，选择 **New +** → **Blueprint**，连接刚创建的 GitHub 仓库并选中它。
-3. Render 会读取 `render.yaml`。在部署表单中填入 `OPENAI_API_KEY`；如使用豆包语音，将 `TTS_PROVIDER` 改为 `doubao`，并额外填入 `VOLCENGINE_TTS_API_KEY`。
+3. Render 会读取 `render.yaml`。在部署表单中填入 `OPENAI_API_KEY`（剧情生成）和 `VOLCENGINE_TTS_API_KEY`（豆包语音合成 2.0 · 魅力苏菲）。
 4. 点击 **Apply**，等待部署完成。Render 会给出类似 `https://seventh-dungeon-master.onrender.com` 的 HTTPS 链接，复制该链接即可分享。
 
 > 免费实例闲置时可能休眠；第一次打开可能需要等待几十秒。每位体验者仍在自己的浏览器中选择本地视频，视频不会上传到 Render。
