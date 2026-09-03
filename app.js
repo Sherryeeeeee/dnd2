@@ -335,15 +335,15 @@ async function chooseMainQuest() {
   clearSuggestions();
   const fallback = {
     title: '三道委托',
-    narration: '你们踏入新地名的第一刻，三条传闻同时抵达：失物、旧誓与一扇只在特定时辰开启的门。哪一件事最值得先追？',
-    choices: [['追寻失落罗盘', '选择主线', 0], ['回应守望者旧誓', '选择主线', 0], ['寻找潮门的钥匙', '选择主线', 0]],
+    narration: '眼前的景象里藏着三道尚未被说破的岔路：一条通向迫近的危机，一条通向陌生人的交易，另一条则通向被遗忘的秘密。',
+    choices: [['阻止正在逼近的异变', '选择主线', 0], ['接受陌生旅人的危险委托', '选择主线', 0], ['追查地标背后的失落秘密', '选择主线', 0]],
     passiveDC: 13,
     mood: '庄重、神秘、带有启程前的紧迫感'
   };
   const scene = await askDM({
     requestType: 'main_quest_options',
     openingScene: state.module?.hook,
-    instruction: '根据场景、角色、动机与三位 NPC，给出三个可选择的原创主线任务。narration 用短叙事呈现三条委托同时出现的时刻；choices 必须是三个任务名，check 固定“选择主线”，dc 为 0。不要进入实际遭遇，也不要剧透真相。'
+    instruction: '必须依据第一帧截图的实际可见主体、地貌、人工设施、天气、光线或人物，结合角色和动机，实时创作三条原创主线任务。三条任务应使用画面中不同的元素，分别体现危机、社交交易或秘密探索等差异；不要使用预置模组、固定 NPC 动机或惯用母题。除非画面确有对应元素或玩家主动提及，禁止使用寻找弟弟/失踪亲属、呼唤、潮声/潮汐、海神殿、灯塔、罗盘等内容。narration 用短叙事呈现三条委托同时出现的时刻；choices 必须是三个任务名，check 固定“选择主线”，dc 为 0，requiresRoll 为 false。不要进入实际遭遇，也不要剧透真相。'
   }, fallback);
   state.questScene = { ...scene, anchor: state.module?.name || '开场画面' };
   $('#phase').textContent = '选择主线委托';
@@ -444,9 +444,9 @@ function buildCharacter(concept, name, ancestry, motivation, talent = '在关键
 function makeParty(className) {
   const pool = ['战士', '游侠', '法师'].filter((item) => item !== className);
   return [
-    { name: '玛拉', className: pool[0], motive: '想找回失踪的弟弟' },
-    { name: '托恩', className: pool[1], motive: '受灯塔守望者的旧誓约束' },
-    { name: '伊西尔', className: '牧师', motive: '相信潮汐钥匙能证明自己的学说' }
+    { name: '玛拉', className: pool[0], motive: '相信旅途中的选择比传闻更能定义一个人' },
+    { name: '托恩', className: pool[1], motive: '正在追寻一条只属于自己的远方线索' },
+    { name: '伊西尔', className: '牧师', motive: '希望在未知之地见证一场足以改变信念的抉择' }
   ];
 }
 
