@@ -152,6 +152,22 @@ function classifyEvent(action, check, declaredType = '') {
 
 function activeEffects(ability) { return (state.eventState?.effects || []).filter((effect) => effect.ability === ability); }
 function consumeEffects(ids) { if (ids?.length) state.eventState.effects = state.eventState.effects.filter((effect) => !ids.includes(effect.id)); }
+function recalculateCharacterDerivedStats() {
+  const pc = state.character; if (!pc || !classData[pc.className]) return;
+  const previousMax = pc.maxHp || pc.hp;
+  const nextMax = Math.max(1, classData[pc.className].hitDie + mod(pc.scores.体质));
+  pc.maxHp = nextMax;
+  // 1 级角色的体质调整值变化会等量影响生命上限；保持已承受伤害不变。
+  pc.hp = Math.max(0, Math.min(nextMax, pc.hp + (nextMax - previousMax)));
+  pc.passive = 10 + mod(pc.scores.感知) + (pc.skills.includes('察觉') ? 2 : 0);
+}
+function permanentlyAdjustAbility(ability, delta) {
+  const pc = state.character; if (!pc?.scores?.[ability] || !delta) return '';
+  const before = pc.scores[ability]; const after = Math.max(6, Math.min(20, before + delta));
+  if (after === before) return `${ability}已达当前界限`;
+  pc.scores[ability] = after; recalculateCharacterDerivedStats();
+  return `${ability}${signed(after - before)}（永久）`;
+}
 function applyEventImpact(event, result) {
   const effect = (name, ability, bonus, narration, changes = {}) => ({ id: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`, name, ability, bonus, narration, changes });
   if (result.simple) {
@@ -160,19 +176,21 @@ function applyEventImpact(event, result) {
     return impact;
   }
   const pc = state.character;
+  // 本项目的成长规则：有风险的 d20 事件会留下永久成长或挫折；普通直接结算不会改写六维属性。
+  const permanentChange = permanentlyAdjustAbility(result.ability, result.success ? 1 : -1);
   const hurt = (amount) => {
     if (!pc) return 0;
     const absorbed = Math.min(pc.tempHp || 0, amount); pc.tempHp = Math.max(0, (pc.tempHp || 0) - absorbed);
     const damage = amount - absorbed; pc.hp = Math.max(0, pc.hp - damage); return damage;
   };
   let impact;
-  if (result.success && event === '探索') { state.eventState.clues += 1; impact = effect('发现线索', '感知', 1, '你发现了可利用的线索；下一次感知检定获得 +1。'); }
-  else if (result.success && event === '社交') { state.eventState.trust += 1; impact = effect('赢得信任', '魅力', 1, '你的言辞赢得信任；下一次魅力检定获得 +1。', { trust: 1 }); }
-  else if (result.success && event === '战斗') { state.eventState.threat = Math.max(0, state.eventState.threat - 1); pc.tempHp = Math.min(6, (pc.tempHp || 0) + 2); impact = effect('战意高涨', result.ability, 1, `你在交锋中站稳了脚跟，获得 2 点临时生命；下一次${result.ability}检定获得 +1。`, { tempHp: 2, threat: -1 }); }
-  else if (result.success && event === '危机') { state.eventState.threat = Math.max(0, state.eventState.threat - 1); impact = effect('化险为夷', result.ability, 1, `危机被你化解；下一次${result.ability}检定获得 +1。`, { threat: -1 }); }
-  else if (!result.success && (event === '战斗' || event === '危机')) { state.eventState.threat += 1; const damage = hurt(1 + Math.floor(Math.random() * 4)); impact = effect(damage ? '擦伤与压力' : '护盾承伤', '感知', -1, damage ? `冲击穿过防线，你失去 ${damage} 点生命；下一次感知检定承受 -1。` : '临时生命挡下了冲击；下一次感知检定承受 -1。', { hp: -damage, threat: 1 }); }
-  else if (!result.success && event === '社交') { state.eventState.trust = Math.max(0, state.eventState.trust - 1); impact = effect('疑虑未消', '魅力', -1, '对方的疑虑尚未消散；下一次魅力检定承受 -1。', { trust: -1 }); }
-  else impact = effect('险中得讯', '感知', 1, '挫折留下了可利用的警讯；下一次感知检定获得 +1。');
+  if (result.success && event === '探索') { state.eventState.clues += 1; impact = effect('发现线索', '感知', 1, `你发现了可利用的线索，${permanentChange}；下一次感知检定获得 +1。`, { ability: permanentChange }); }
+  else if (result.success && event === '社交') { state.eventState.trust += 1; impact = effect('赢得信任', '魅力', 1, `你的言辞赢得信任，${permanentChange}；下一次魅力检定获得 +1。`, { trust: 1, ability: permanentChange }); }
+  else if (result.success && event === '战斗') { state.eventState.threat = Math.max(0, state.eventState.threat - 1); pc.tempHp = Math.min(6, (pc.tempHp || 0) + 2); impact = effect('战意高涨', result.ability, 1, `你在交锋中站稳了脚跟，获得 2 点临时生命，${permanentChange}；下一次${result.ability}检定获得 +1。`, { tempHp: 2, threat: -1, ability: permanentChange }); }
+  else if (result.success && event === '危机') { state.eventState.threat = Math.max(0, state.eventState.threat - 1); impact = effect('化险为夷', result.ability, 1, `危机被你化解，${permanentChange}；下一次${result.ability}检定获得 +1。`, { threat: -1, ability: permanentChange }); }
+  else if (!result.success && (event === '战斗' || event === '危机')) { state.eventState.threat += 1; const damage = hurt(1 + Math.floor(Math.random() * 4)); impact = effect(damage ? '擦伤与压力' : '护盾承伤', '感知', -1, damage ? `冲击穿过防线，你失去 ${damage} 点生命，${permanentChange}；下一次感知检定承受 -1。` : `临时生命挡下了冲击，${permanentChange}；下一次感知检定承受 -1。`, { hp: -damage, threat: 1, ability: permanentChange }); }
+  else if (!result.success && event === '社交') { state.eventState.trust = Math.max(0, state.eventState.trust - 1); impact = effect('疑虑未消', '魅力', -1, `对方的疑虑尚未消散，${permanentChange}；下一次魅力检定承受 -1。`, { trust: -1, ability: permanentChange }); }
+  else impact = effect('险中得讯', '感知', 1, `挫折留下了可利用的警讯，${permanentChange}；下一次感知检定获得 +1。`, { ability: permanentChange });
   state.eventState.effects.push(impact);
   state.eventState.recentEvents = [...(state.eventState.recentEvents || []), `${event}${result.success ? '成功' : '受挫'}`].slice(-4);
   return impact;
@@ -465,7 +483,7 @@ function renderSheet() {
   const questText = state.mainQuest ? `${state.mainQuest.title}：${state.mainQuest.objective}` : '角色完成后，由地下城主揭示。';
   $('#sheetQuest').textContent = questText;
   const effects = state.eventState?.effects || []; const summary = `线索 ${state.eventState.clues} · 信任 ${state.eventState.trust} · 威胁 ${state.eventState.threat}`;
-  const effectText = `${summary}${effects.length ? `\n${effects.map((effect) => `${effect.name}：${effect.ability}检定 ${signed(effect.bonus)}（下次生效）`).join('；')}` : ' · 尚无临时状态。'}`;
+  const effectText = `${summary}${effects.length ? `\n${effects.map((effect) => `${effect.name}：${effect.changes?.ability ? `${effect.changes.ability}；` : ''}${effect.ability ? `${effect.ability}检定 ${signed(effect.bonus)}（下次生效）` : '剧情已推进'}`).join('；')}` : ' · 尚无临时状态。'}`;
   $('#storyEffectText').textContent = effectText; $('#sheetEffects').textContent = effectText;
   $('#sideSheet').classList.remove('hidden');
 }
